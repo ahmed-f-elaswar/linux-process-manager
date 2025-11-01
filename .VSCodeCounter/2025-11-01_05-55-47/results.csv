@@ -1,0 +1,35 @@
+"filename", "language", "Markdown", "Shell Script", "Rust", "HTML", "Python", "comment", "blank", "total"
+"/home/t-aelaswar/process-manager/COMPLETE_DOCUMENTATION.md", "Markdown", 1659, 0, 0, 0, 0, 0, 443, 2102
+"/home/t-aelaswar/process-manager/PROJECT_SUMMARY.md", "Markdown", 262, 0, 0, 0, 0, 0, 49, 311
+"/home/t-aelaswar/process-manager/README.md", "Markdown", 374, 0, 0, 0, 0, 0, 96, 470
+"/home/t-aelaswar/process-manager/benches/benchmarks.rs", "Rust", 0, 0, 177, 0, 0, 20, 42, 239
+"/home/t-aelaswar/process-manager/demo.sh", "Shell Script", 0, 88, 0, 0, 0, 2, 6, 96
+"/home/t-aelaswar/process-manager/examples/api_client.sh", "Shell Script", 0, 135, 0, 0, 0, 16, 22, 173
+"/home/t-aelaswar/process-manager/examples/api_export_csv.py", "Python", 0, 0, 0, 0, 32, 11, 12, 55
+"/home/t-aelaswar/process-manager/examples/api_monitor_cpu.py", "Python", 0, 0, 0, 0, 59, 12, 14, 85
+"/home/t-aelaswar/process-manager/src/affinity.rs", "Rust", 0, 0, 194, 0, 0, 121, 39, 354
+"/home/t-aelaswar/process-manager/src/alerts.rs", "Rust", 0, 0, 353, 0, 0, 65, 58, 476
+"/home/t-aelaswar/process-manager/src/anomaly.rs", "Rust", 0, 0, 393, 0, 0, 31, 72, 496
+"/home/t-aelaswar/process-manager/src/api.rs", "Rust", 0, 0, 385, 0, 0, 18, 59, 462
+"/home/t-aelaswar/process-manager/src/config.rs", "Rust", 0, 0, 285, 0, 0, 34, 59, 378
+"/home/t-aelaswar/process-manager/src/containers.rs", "Rust", 0, 0, 281, 0, 0, 70, 53, 404
+"/home/t-aelaswar/process-manager/src/diffing.rs", "Rust", 0, 0, 342, 0, 0, 71, 49, 462
+"/home/t-aelaswar/process-manager/src/gpu.rs", "Rust", 0, 0, 199, 0, 0, 22, 35, 256
+"/home/t-aelaswar/process-manager/src/groups.rs", "Rust", 0, 0, 180, 0, 0, 54, 37, 271
+"/home/t-aelaswar/process-manager/src/history.rs", "Rust", 0, 0, 295, 0, 0, 16, 49, 360
+"/home/t-aelaswar/process-manager/src/lib.rs", "Rust", 0, 0, 19, 0, 0, 56, 4, 79
+"/home/t-aelaswar/process-manager/src/logging.rs", "Rust", 0, 0, 154, 0, 0, 120, 20, 294
+"/home/t-aelaswar/process-manager/src/main.rs", "Rust", 0, 0, 212, 0, 0, 105, 23, 340
+"/home/t-aelaswar/process-manager/src/memmap.rs", "Rust", 0, 0, 265, 0, 0, 59, 43, 367
+"/home/t-aelaswar/process-manager/src/metrics.rs", "Rust", 0, 0, 270, 0, 0, 30, 42, 342
+"/home/t-aelaswar/process-manager/src/network.rs", "Rust", 0, 0, 242, 0, 0, 30, 43, 315
+"/home/t-aelaswar/process-manager/src/process.rs", "Rust", 0, 0, 364, 0, 0, 113, 66, 543
+"/home/t-aelaswar/process-manager/src/profiles.rs", "Rust", 0, 0, 334, 0, 0, 67, 45, 446
+"/home/t-aelaswar/process-manager/src/snapshots.rs", "Rust", 0, 0, 340, 0, 0, 58, 55, 453
+"/home/t-aelaswar/process-manager/src/tree.rs", "Rust", 0, 0, 154, 0, 0, 4, 23, 181
+"/home/t-aelaswar/process-manager/src/ui.rs", "Rust", 0, 0, 607, 0, 0, 25, 74, 706
+"/home/t-aelaswar/process-manager/test.sh", "Shell Script", 0, 46, 0, 0, 0, 6, 7, 59
+"/home/t-aelaswar/process-manager/tests/integration_test.rs", "Rust", 0, 0, 50, 0, 0, 24, 21, 95
+"/home/t-aelaswar/process-manager/tests/integration_tests.rs", "Rust", 0, 0, 257, 0, 0, 20, 61, 338
+"/home/t-aelaswar/process-manager/web/index.html", "HTML", 0, 0, 0, 403, 0, 0, 68, 471
+"Total", "-", 2295, 269, 6352, 403, 91, 1280, 1789, 12479

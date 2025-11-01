@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Linux Process Manager - Web UI</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #1a1a1a;
+            color: #e0e0e0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: #2d2d2d;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        h1 {
+            color: #4CAF50;
+            margin-bottom: 10px;
+        }
+
+        .system-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .info-card {
+            background: #2d2d2d;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .info-card h3 {
+            color: #64B5F6;
+            font-size: 0.9em;
+            margin-bottom: 8px;
+        }
+
+        .info-card .value {
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+
+        .controls {
+            background: #2d2d2d;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        input[type="text"] {
+            padding: 8px 12px;
+            background: #3a3a3a;
+            border: 1px solid #555;
+            border-radius: 4px;
+            color: #e0e0e0;
+            flex: 1;
+            min-width: 200px;
+        }
+
+        select, button {
+            padding: 8px 16px;
+            background: #4CAF50;
+            border: none;
+            border-radius: 4px;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        select {
+            background: #3a3a3a;
+            border: 1px solid #555;
+        }
+
+        button:hover {
+            background: #45a049;
+        }
+
+        button.danger {
+            background: #f44336;
+        }
+
+        button.danger:hover {
+            background: #da190b;
+        }
+
+        .process-table {
+            background: #2d2d2d;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: #3a3a3a;
+        }
+
+        th {
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #64B5F6;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        th:hover {
+            background: #454545;
+        }
+
+        tbody tr {
+            border-bottom: 1px solid #3a3a3a;
+        }
+
+        tbody tr:hover {
+            background: #353535;
+        }
+
+        td {
+            padding: 10px 12px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: bold;
+        }
+
+        .badge.container {
+            background: #2196F3;
+        }
+
+        .badge.gpu {
+            background: #FF9800;
+        }
+
+        .cpu-high {
+            color: #f44336;
+        }
+
+        .cpu-medium {
+            color: #FFC107;
+        }
+
+        .status-bar {
+            background: #2d2d2d;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            text-align: center;
+            font-size: 0.9em;
+            color: #888;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #888;
+        }
+
+        .error {
+            background: #f44336;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #4CAF50;
+            animation: spin 1s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🖥️ Linux Process Manager</h1>
+            <p>Real-time process monitoring with container and GPU support</p>
+        </header>
+
+        <div class="system-info" id="systemInfo">
+            <div class="info-card">
+                <h3>CPU Cores</h3>
+                <div class="value" id="cpuCount">-</div>
+            </div>
+            <div class="info-card">
+                <h3>Load Average</h3>
+                <div class="value" id="loadAvg">-</div>
+            </div>
+            <div class="info-card">
+                <h3>Memory Usage</h3>
+                <div class="value" id="memoryUsage">-</div>
+            </div>
+            <div class="info-card">
+                <h3>Processes</h3>
+                <div class="value" id="processCount">-</div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <input type="text" id="searchInput" placeholder="Search processes (regex)...">
+            <select id="sortBy">
+                <option value="cpu">Sort by CPU</option>
+                <option value="memory">Sort by Memory</option>
+                <option value="pid">Sort by PID</option>
+                <option value="name">Sort by Name</option>
+            </select>
+            <button onclick="refreshProcesses()">🔄 Refresh</button>
+            <button onclick="toggleAutoRefresh()" id="autoRefreshBtn">▶️ Auto-refresh</button>
+        </div>
+
+        <div id="errorMessage" style="display: none;" class="error"></div>
+
+        <div class="process-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th onclick="sortBy('pid')">PID</th>
+                        <th onclick="sortBy('name')">Name</th>
+                        <th onclick="sortBy('user')">User</th>
+                        <th onclick="sortBy('cpu')">CPU %</th>
+                        <th onclick="sortBy('memory')">Memory</th>
+                        <th>Status</th>
+                        <th>Command</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="processTable">
+                    <tr>
+                        <td colspan="8" class="loading">
+                            <div class="spinner"></div> Loading processes...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="status-bar">
+            Last updated: <span id="lastUpdate">Never</span> | 
+            Auto-refresh: <span id="autoRefreshStatus">Off</span>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8080/api';
+        let autoRefreshInterval = null;
+        let currentSort = 'cpu';
+        let currentSortAsc = false;
+        let processes = [];
+
+        // Fetch system information
+        async function fetchSystemInfo() {
+            try {
+                const response = await fetch(`${API_BASE}/system`);
+                const data = await response.json();
+                
+                document.getElementById('cpuCount').textContent = data.cpu_count;
+                document.getElementById('loadAvg').textContent = 
+                    `${data.load_average.one.toFixed(2)} ${data.load_average.five.toFixed(2)} ${data.load_average.fifteen.toFixed(2)}`;
+                
+                const memUsedGB = (data.used_memory / 1024 / 1024).toFixed(1);
+                const memTotalGB = (data.total_memory / 1024 / 1024).toFixed(1);
+                const memPercent = ((data.used_memory / data.total_memory) * 100).toFixed(1);
+                document.getElementById('memoryUsage').textContent = 
+                    `${memUsedGB} / ${memTotalGB} GB (${memPercent}%)`;
+            } catch (error) {
+                console.error('Failed to fetch system info:', error);
+            }
+        }
+
+        // Fetch processes
+        async function fetchProcesses() {
+            try {
+                const searchTerm = document.getElementById('searchInput').value;
+                const sortBy = document.getElementById('sortBy').value;
+                
+                let url = `${API_BASE}/processes?sort_by=${sortBy}&ascending=${currentSortAsc}`;
+                if (searchTerm) {
+                    url += `&name=${encodeURIComponent(searchTerm)}`;
+                }
+                
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                processes = data.processes;
+                document.getElementById('processCount').textContent = data.filtered;
+                
+                renderProcessTable(processes);
+                document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString();
+                
+                hideError();
+            } catch (error) {
+                console.error('Failed to fetch processes:', error);
+                showError('Failed to connect to API server. Make sure it\'s running on port 8080.');
+            }
+        }
+
+        // Render process table
+        function renderProcessTable(processList) {
+            const tbody = document.getElementById('processTable');
+            
+            if (processList.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" class="loading">No processes found</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = processList.map(proc => {
+                const cpuClass = proc.cpu_usage > 50 ? 'cpu-high' : (proc.cpu_usage > 20 ? 'cpu-medium' : '');
+                const memoryMB = (proc.memory_usage / 1024).toFixed(1);
+                
+                let badges = '';
+                if (proc.is_container) {
+                    badges += '<span class="badge container">🐳 Container</span> ';
+                }
+                if (proc.gpu_memory) {
+                    badges += `<span class="badge gpu">🎮 GPU: ${proc.gpu_memory} MB</span> `;
+                }
+                
+                const cmdShort = proc.command.length > 60 ? proc.command.substring(0, 57) + '...' : proc.command;
+                
+                return `
+                    <tr>
+                        <td>${proc.pid}</td>
+                        <td><strong>${proc.name}</strong></td>
+                        <td>${proc.user}</td>
+                        <td class="${cpuClass}">${proc.cpu_usage.toFixed(1)}%</td>
+                        <td>${memoryMB} MB</td>
+                        <td>${badges || proc.state}</td>
+                        <td title="${proc.command}">${cmdShort}</td>
+                        <td>
+                            <button class="danger" onclick="killProcess(${proc.pid}, '${proc.name}')" 
+                                    style="padding: 4px 8px; font-size: 12px;">
+                                Kill
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Kill process
+        async function killProcess(pid, name) {
+            if (!confirm(`Are you sure you want to kill process ${pid} (${name})?`)) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/processes/kill`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ pid, signal: 15 })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert(`Successfully sent signal to process ${pid}`);
+                    refreshProcesses();
+                } else {
+                    alert(`Failed: ${data.message}`);
+                }
+            } catch (error) {
+                alert('Failed to kill process: ' + error.message);
+            }
+        }
+
+        // Sort processes
+        function sortBy(column) {
+            currentSort = column;
+            currentSortAsc = !currentSortAsc;
+            document.getElementById('sortBy').value = column;
+            fetchProcesses();
+        }
+
+        // Refresh everything
+        function refreshProcesses() {
+            fetchSystemInfo();
+            fetchProcesses();
+        }
+
+        // Toggle auto-refresh
+        function toggleAutoRefresh() {
+            if (autoRefreshInterval) {
+                clearInterval(autoRefreshInterval);
+                autoRefreshInterval = null;
+                document.getElementById('autoRefreshBtn').textContent = '▶️ Auto-refresh';
+                document.getElementById('autoRefreshStatus').textContent = 'Off';
+            } else {
+                autoRefreshInterval = setInterval(refreshProcesses, 2000);
+                document.getElementById('autoRefreshBtn').textContent = '⏸️ Stop refresh';
+                document.getElementById('autoRefreshStatus').textContent = 'On (2s)';
+            }
+        }
+
+        // Error handling
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+        }
+
+        function hideError() {
+            document.getElementById('errorMessage').style.display = 'none';
+        }
+
+        // Search on input
+        document.getElementById('searchInput').addEventListener('input', () => {
+            if (!autoRefreshInterval) {
+                fetchProcesses();
+            }
+        });
+
+        // Sort change
+        document.getElementById('sortBy').addEventListener('change', () => {
+            fetchProcesses();
+        });
+
+        // Initial load
+        refreshProcesses();
+        
+        // Health check
+        fetch(`${API_BASE}/health`)
+            .then(r => r.json())
+            .then(data => console.log('API Health:', data))
+            .catch(e => showError('Cannot connect to API server'));
+    </script>
+</body>
+</html>

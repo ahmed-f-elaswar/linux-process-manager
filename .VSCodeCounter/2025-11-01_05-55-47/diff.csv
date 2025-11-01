@@ -1,0 +1,5 @@
+"filename", "language", "Rust", "comment", "blank", "total"
+"/home/t-aelaswar/process-manager/src/anomaly.rs", "Rust", 30, 0, 5, 35
+"/home/t-aelaswar/process-manager/src/main.rs", "Rust", 2, 0, 0, 2
+"/home/t-aelaswar/process-manager/src/snapshots.rs", "Rust", 15, 0, 6, 21
+"Total", "-", 47, 0, 11, 58

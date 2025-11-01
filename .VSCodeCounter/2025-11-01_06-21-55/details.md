@@ -1,0 +1,48 @@
+# Details
+
+Date : 2025-11-01 06:21:55
+
+Directory /home/t-aelaswar/process-manager
+
+Total : 33 files,  9452 codes, 1280 comments, 1790 blanks, all 12522 lines
+
+[Summary](results.md) / Details / [Diff Summary](diff.md) / [Diff Details](diff-details.md)
+
+## Files
+| filename | language | code | comment | blank | total |
+| :--- | :--- | ---: | ---: | ---: | ---: |
+| [COMPLETE\_DOCUMENTATION.md](/COMPLETE_DOCUMENTATION.md) | Markdown | 1,659 | 0 | 443 | 2,102 |
+| [PROJECT\_SUMMARY.md](/PROJECT_SUMMARY.md) | Markdown | 262 | 0 | 49 | 311 |
+| [README.md](/README.md) | Markdown | 374 | 0 | 96 | 470 |
+| [benches/benchmarks.rs](/benches/benchmarks.rs) | Rust | 177 | 20 | 42 | 239 |
+| [demo.sh](/demo.sh) | Shell Script | 88 | 2 | 6 | 96 |
+| [examples/api\_client.sh](/examples/api_client.sh) | Shell Script | 135 | 16 | 22 | 173 |
+| [examples/api\_export\_csv.py](/examples/api_export_csv.py) | Python | 32 | 11 | 12 | 55 |
+| [examples/api\_monitor\_cpu.py](/examples/api_monitor_cpu.py) | Python | 59 | 12 | 14 | 85 |
+| [src/affinity.rs](/src/affinity.rs) | Rust | 194 | 121 | 39 | 354 |
+| [src/alerts.rs](/src/alerts.rs) | Rust | 353 | 65 | 58 | 476 |
+| [src/anomaly.rs](/src/anomaly.rs) | Rust | 393 | 31 | 72 | 496 |
+| [src/api.rs](/src/api.rs) | Rust | 385 | 18 | 59 | 462 |
+| [src/config.rs](/src/config.rs) | Rust | 290 | 34 | 59 | 383 |
+| [src/containers.rs](/src/containers.rs) | Rust | 285 | 70 | 53 | 408 |
+| [src/diffing.rs](/src/diffing.rs) | Rust | 347 | 71 | 50 | 468 |
+| [src/gpu.rs](/src/gpu.rs) | Rust | 205 | 22 | 35 | 262 |
+| [src/groups.rs](/src/groups.rs) | Rust | 185 | 54 | 37 | 276 |
+| [src/history.rs](/src/history.rs) | Rust | 295 | 16 | 49 | 360 |
+| [src/lib.rs](/src/lib.rs) | Rust | 19 | 56 | 4 | 79 |
+| [src/logging.rs](/src/logging.rs) | Rust | 154 | 120 | 20 | 294 |
+| [src/main.rs](/src/main.rs) | Rust | 212 | 105 | 23 | 340 |
+| [src/memmap.rs](/src/memmap.rs) | Rust | 268 | 59 | 43 | 370 |
+| [src/metrics.rs](/src/metrics.rs) | Rust | 274 | 30 | 42 | 346 |
+| [src/network.rs](/src/network.rs) | Rust | 246 | 30 | 43 | 319 |
+| [src/process.rs](/src/process.rs) | Rust | 364 | 113 | 66 | 543 |
+| [src/profiles.rs](/src/profiles.rs) | Rust | 337 | 67 | 45 | 449 |
+| [src/snapshots.rs](/src/snapshots.rs) | Rust | 340 | 58 | 55 | 453 |
+| [src/tree.rs](/src/tree.rs) | Rust | 157 | 4 | 23 | 184 |
+| [src/ui.rs](/src/ui.rs) | Rust | 607 | 25 | 74 | 706 |
+| [test.sh](/test.sh) | Shell Script | 46 | 6 | 7 | 59 |
+| [tests/integration\_test.rs](/tests/integration_test.rs) | Rust | 50 | 24 | 21 | 95 |
+| [tests/integration\_tests.rs](/tests/integration_tests.rs) | Rust | 257 | 20 | 61 | 338 |
+| [web/index.html](/web/index.html) | HTML | 403 | 0 | 68 | 471 |
+
+[Summary](results.md) / Details / [Diff Summary](diff.md) / [Diff Details](diff-details.md)

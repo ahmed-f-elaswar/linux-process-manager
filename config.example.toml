@@ -1,0 +1,100 @@
+# Linux Process Manager - Example Configuration
+# Copy this file to ~/.config/process-manager/config.toml
+# Or specify with: process-manager --config /path/to/config.toml
+
+[general]
+# Default refresh interval in seconds
+refresh_interval = 2
+
+# Show only user processes by default (hide system processes)
+show_only_user_processes = false
+
+# Default sort column: pid, name, user, cpu, memory, start_time
+default_sort_column = "cpu"
+
+# Sort in ascending order (true) or descending (false)
+sort_ascending = false
+
+[ui]
+# Start in tree view mode
+start_in_tree_view = false
+
+# Show system resource graphs by default
+show_graphs = true
+
+# Color scheme: dark, light, custom
+color_scheme = "dark"
+
+# Number of processes to display per page
+page_size = 50
+
+[api]
+# Enable API server on startup
+enabled = false
+
+# API server port
+port = 8080
+
+# API server bind address (use 0.0.0.0 for all interfaces)
+bind_address = "127.0.0.1"
+
+# Enable CORS for web clients
+enable_cors = true
+
+# Auto-record history when API is enabled
+auto_record_history = true
+
+[history]
+# Enable historical data collection
+enabled = true
+
+# Database file path
+# On Linux: ~/.local/share/process-manager/history.db
+# You can specify a custom path here
+database_path = "process_history.db"
+
+# Data retention period in days (older data will be cleaned up)
+retention_days = 30
+
+# Recording interval in seconds
+recording_interval = 60
+
+[alerts]
+# Enable alert system
+enabled = false
+
+# CPU usage threshold (percentage) - alert if process exceeds this
+cpu_threshold = 80.0
+
+# Memory usage threshold (percentage)
+memory_threshold = 85.0
+
+# Enable alert sound
+sound_enabled = false
+
+# Bookmarked processes to watch
+# Example entries:
+# [[alerts.bookmarked_processes]]
+# name = "nginx"
+# alert_on_exit = true
+# alert_on_high_cpu = true
+# alert_on_high_memory = false
+#
+# [[alerts.bookmarked_processes]]
+# name = "postgres"
+# alert_on_exit = true
+# alert_on_high_cpu = false
+# alert_on_high_memory = true
+
+[features]
+# Enable GPU monitoring (requires nvidia-smi, rocm-smi, or Intel GPU)
+gpu_monitoring = true
+
+# Enable network connection monitoring
+network_monitoring = true
+
+# Enable container detection (Docker, Kubernetes, LXC)
+container_detection = true
+
+# Enable anomaly detection (statistical analysis)
+anomaly_detection = true
