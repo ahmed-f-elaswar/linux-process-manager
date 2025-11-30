@@ -3,16 +3,20 @@
 
 use crate::process::{ProcessManager, ProcessFilter, SortColumn, ProcessInfo};
 use crate::history::HistoryManager;
-use actix_web::{web, App, HttpServer, HttpResponse, Responder, middleware};
-use actix_files as fs;
+use actix_web::{web, App, HttpServer, HttpResponse, Responder, middleware, http::header};
 use actix_cors::Cors;
 use serde::{Deserialize, Serialize};
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
-use std::path::PathBuf;
 use tokio::time::interval;
 use chrono::{DateTime, Utc};
 use tracing::{debug, info, warn, error};
+use rust_embed::RustEmbed;
+
+// Embed the web UI files directly into the binary
+#[derive(RustEmbed)]
+#[folder = "web/dist/"]
+struct WebAssets;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ApiProcessInfo {
@@ -320,6 +324,44 @@ async fn health_check() -> impl Responder {
     }))
 }
 
+/// Serve embedded static files
+async fn serve_embedded_file(path: web::Path<String>) -> impl Responder {
+    let path = path.into_inner();
+    let file_path = if path.is_empty() { "index.html" } else { &path };
+
+    match WebAssets::get(file_path) {
+        Some(content) => {
+            let mime = mime_guess::from_path(file_path).first_or_octet_stream();
+            HttpResponse::Ok()
+                .insert_header(header::ContentType(mime))
+                .body(content.data.into_owned())
+        }
+        None => {
+            // For SPA routing, serve index.html for unknown paths
+            match WebAssets::get("index.html") {
+                Some(content) => {
+                    HttpResponse::Ok()
+                        .insert_header(header::ContentType(mime_guess::mime::TEXT_HTML))
+                        .body(content.data.into_owned())
+                }
+                None => HttpResponse::NotFound().body("Not found"),
+            }
+        }
+    }
+}
+
+/// Serve index.html for root path
+async fn serve_index() -> impl Responder {
+    match WebAssets::get("index.html") {
+        Some(content) => {
+            HttpResponse::Ok()
+                .insert_header(header::ContentType(mime_guess::mime::TEXT_HTML))
+                .body(content.data.into_owned())
+        }
+        None => HttpResponse::NotFound().body("Web UI not available"),
+    }
+}
+
 // Background task to record historical data
 async fn record_history_task(state: Arc<AppState>) {
     let mut interval = interval(Duration::from_secs(60)); // Record every minute
@@ -395,20 +437,12 @@ pub async fn start_api_server(
     }
 
     println!("Starting REST API server on {}", bind_address);
-
-    // Determine the static files directory
-    // Check multiple possible locations for the web UI
-    let static_dir = find_static_dir();
-    if let Some(ref dir) = static_dir {
-        println!("Serving static files from: {}", dir.display());
-    }
+    println!("Web UI embedded in binary - no external files needed");
 
     let app_state_data = web::Data::new(AppState {
         process_manager: app_state.process_manager.clone(),
         history_manager: app_state.history_manager.clone(),
     });
-
-    let static_dir_clone = static_dir.clone();
 
     HttpServer::new(move || {
         let cors = Cors::default()
@@ -416,64 +450,27 @@ pub async fn start_api_server(
             .allow_any_method()
             .allow_any_header();
 
-        let mut app = App::new()
+        App::new()
             .app_data(app_state_data.clone())
             .wrap(middleware::Logger::default())
             .wrap(cors)
+            // API routes
             .route("/api/health", web::get().to(health_check))
             .route("/api/processes", web::get().to(get_processes))
             .route("/api/processes/{pid}", web::get().to(get_process))
             .route("/api/processes/kill", web::post().to(kill_process))
             .route("/api/system", web::get().to(get_system_info))
             .route("/api/history/processes", web::get().to(get_process_history))
-            .route("/api/history/top-cpu", web::get().to(get_top_cpu_consumers));
-
-        // Serve static files if the directory exists
-        if let Some(ref dir) = static_dir_clone {
-            app = app.service(
-                fs::Files::new("/", dir.clone())
-                    .index_file("index.html")
-                    .default_handler(
-                        fs::NamedFile::open(dir.join("index.html"))
-                            .expect("index.html not found")
-                    )
-            );
-        }
-
-        app
+            .route("/api/history/top-cpu", web::get().to(get_top_cpu_consumers))
+            // Serve embedded static files
+            .route("/", web::get().to(serve_index))
+            .route("/{path:.*}", web::get().to(serve_embedded_file))
     })
     .bind(bind_address)?
     .run()
     .await
 }
 
-/// Find the directory containing static web files
-/// Checks multiple possible locations in order of preference
-fn find_static_dir() -> Option<PathBuf> {
-    let possible_paths = [
-        // Docker/production: web/dist relative to binary
-        PathBuf::from("web/dist"),
-        // Development: relative to current directory
-        PathBuf::from("./web/dist"),
-        // Legacy: single HTML file location
-        PathBuf::from("web"),
-        PathBuf::from("./web"),
-        // Absolute path for Docker
-        PathBuf::from("/app/web/dist"),
-    ];
-
-    for path in possible_paths {
-        if path.exists() && path.is_dir() {
-            // Check if it contains index.html
-            if path.join("index.html").exists() {
-                return Some(path);
-            }
-        }
-    }
-
-    info!("No static files directory found - API-only mode");
-    None
-}
 
 #[cfg(test)]
 mod tests {
