@@ -27,30 +27,14 @@ FROM rust:1.83-bookworm AS backend-builder
 
 WORKDIR /app
 
-# Copy Cargo files first for better caching
+# Copy Cargo files and source
 COPY Cargo.toml Cargo.lock ./
-
-# Create dummy src to build dependencies first
-RUN mkdir src && \
-    echo "fn main() {}" > src/main.rs && \
-    echo "pub fn dummy() {}" > src/lib.rs
-
-# Create dummy web/dist for rust-embed
-RUN mkdir -p web/dist && echo "<html></html>" > web/dist/index.html
-
-# Build dependencies only
-RUN cargo build --release && rm -rf src
-
-# Copy real source code
 COPY src/ ./src/
 
 # Copy the built frontend from stage 1 (for rust-embed to include)
 COPY --from=frontend-builder /app/web/dist ./web/dist
 
-# Touch main.rs to force rebuild with real frontend
-RUN touch src/main.rs
-
-# Build the actual application (frontend gets embedded)
+# Build the application (frontend gets embedded)
 RUN cargo build --release
 
 # =============================================================================
