@@ -19,6 +19,7 @@ interface ProcessTableProps {
   onSort: (column: SortColumn) => void;
   onKill: (pid: number, signal: number) => void;
   isKilling: boolean;
+  cpuCores: number;
 }
 
 function formatMemory(bytes: number): string {
@@ -66,6 +67,7 @@ export function ProcessTable({
   onSort,
   onKill,
   isKilling,
+  cpuCores,
 }: ProcessTableProps) {
   const [search, setSearch] = useState('');
   const [selectedPid, setSelectedPid] = useState<number | null>(null);
@@ -81,11 +83,11 @@ export function ProcessTable({
     );
   });
 
-  const columns: { key: SortColumn; label: string; className?: string }[] = [
+  const columns: { key: SortColumn; label: string; className?: string; title?: string }[] = [
     { key: 'pid', label: 'PID', className: 'w-20' },
     { key: 'name', label: 'Name' },
     { key: 'user', label: 'User', className: 'w-28' },
-    { key: 'cpu', label: 'CPU %', className: 'w-24 text-right' },
+    { key: 'cpu', label: 'CPU %', className: 'w-24 text-right', title: 'CPU usage as percentage of total system capacity' },
     { key: 'memory', label: 'Memory', className: 'w-28 text-right' },
   ];
 
@@ -126,6 +128,7 @@ export function ProcessTable({
                   key={col.key}
                   onClick={() => onSort(col.key)}
                   className={`sortable ${col.className || ''}`}
+                  title={col.title}
                 >
                   <div className="flex items-center gap-2">
                     {col.label}
@@ -184,8 +187,8 @@ export function ProcessTable({
                     </div>
                   </td>
                   <td className="text-gray-600">{process.user}</td>
-                  <td className={`text-right font-mono ${getCpuColor(process.cpu_usage)}`}>
-                    {process.cpu_usage.toFixed(1)}%
+                  <td className={`text-right font-mono ${getCpuColor(process.cpu_usage / cpuCores)}`}>
+                    {(process.cpu_usage / cpuCores).toFixed(1)}%
                   </td>
                   <td className={`text-right font-mono ${getMemoryColor(process.memory_percent)}`}>
                     {formatMemory(process.memory_usage)}

@@ -392,9 +392,15 @@ impl ProcessManager {
     }
 
     pub fn get_system_info(&self) -> SystemInfo {
+        // Calculate used memory as total - available (excludes reclaimable cache/buffers)
+        // This matches what GNOME System Monitor and htop show
+        let total_memory = self.system.total_memory();
+        let available_memory = self.system.available_memory();
+        let used_memory = total_memory.saturating_sub(available_memory);
+
         SystemInfo {
-            total_memory: self.system.total_memory(),
-            used_memory: self.system.used_memory(),
+            total_memory,
+            used_memory,
             total_swap: self.system.total_swap(),
             used_swap: self.system.used_swap(),
             cpu_count: self.system.cpus().len(),

@@ -131,6 +131,7 @@ function Dashboard() {
             onSort={handleSort}
             onKill={handleKill}
             isKilling={killProcess.isPending}
+            cpuCores={systemInfo?.cpu_count || 1}
           />
         </section>
 
