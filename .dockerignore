@@ -1,0 +1,41 @@
+# Build artifacts
+target/
+*.rs.bk
+
+# Node modules (will be rebuilt)
+web/node_modules/
+web/dist/
+
+# IDE/Editor
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Git
+.git/
+.gitignore
+
+# Documentation (not needed in container)
+*.md
+!README.md
+
+# Development files
+.env
+.env.local
+*.log
+
+# Test files
+tests/
+benches/
+examples/
+
+# Cache
+.cache/
+.npm/
+.cargo/
+
+# Misc
+Thumbs.db
+.DS_Store

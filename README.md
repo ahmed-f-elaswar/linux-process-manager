@@ -59,9 +59,15 @@ A comprehensive, production-ready process manager for Linux systems with advance
 
 ### 🌐 Modern Integration
 - **REST API**: Full HTTP API for programmatic access
-- **Web UI**: Modern browser-based interface for remote monitoring
+- **Web UI**: Modern React + TypeScript frontend with Tailwind CSS
+  - Real-time process monitoring with auto-refresh
+  - Sortable, searchable process table
+  - System stats (CPU, Memory, Swap, Uptime)
+  - Process actions (send signals)
+  - Clean, professional light-mode design
 - **Metrics Export**: Prometheus and InfluxDB format support
 - **Anomaly Detection**: Statistical analysis for CPU/memory spikes
+- **Docker Support**: Multi-stage build for easy deployment
 
 ### 📊 Visualization
 - **System Graphs**: Real-time CPU and memory sparkline charts
@@ -69,13 +75,45 @@ A comprehensive, production-ready process manager for Linux systems with advance
 - **Color-Coded Display**: Visual indicators for resource usage
 - **Container & GPU Indicators**: Emoji badges for special process types
 
-## Quick Start### Prerequisites
-- Linux operating system (kernel 3.10+)
-- Rust toolchain (1.70+)
+## Quick Start
+
+### Prerequisites
+- Linux operating system (kernel 4.15+)
+- Rust toolchain (1.70+) OR Docker
 - Optional: NVIDIA/AMD GPU drivers for GPU monitoring
 - Optional: Docker/Kubernetes for container awareness
 
-### Building from Source
+### Option 1: Docker (Recommended)
+
+The easiest way to run the Linux Process Manager:
+
+```bash
+# Build the Docker image
+docker build -t linux-process-manager .
+
+# Run in API mode (recommended)
+docker run -d -p 8080:8080 --pid=host --name procmgr linux-process-manager
+
+# Open Web UI in browser
+xdg-open http://localhost:8080
+
+# Run in interactive TUI mode
+docker run -it --rm --pid=host linux-process-manager ./process-manager
+
+# View logs
+docker logs procmgr
+
+# Stop and remove
+docker stop procmgr && docker rm procmgr
+```
+
+**Important Docker flags:**
+- `--pid=host` - Required to see host system processes
+- `-p 8080:8080` - Expose the web UI and API
+- `-it` - Required for interactive TUI mode
+
+### Option 2: Building from Source
+
 ```bash
 git clone <repository-url>
 cd process-manager
@@ -93,13 +131,14 @@ cargo build --release
 ./target/release/process-manager --refresh 1   # 1-second refresh
 ```
 
-#### 2. REST API Server
+#### 2. REST API Server + Web UI
 ```bash
 # Start API server on port 8080
 ./target/release/process-manager --api --api-port 8080
 
-# Then open web UI in browser
-firefox web/index.html
+# The Web UI is automatically served at http://localhost:8080
+# Open in browser
+xdg-open http://localhost:8080
 ```
 
 #### 3. Metrics Export
@@ -355,8 +394,26 @@ process-manager/
 │   ├── api_client.sh            # Shell API client
 │   ├── api_export_csv.py        # CSV exporter
 │   └── api_monitor_cpu.py       # CPU monitor
-├── web/
-│   └── index.html        # Web UI
+├── web/                  # React + TypeScript Web UI
+│   ├── src/
+│   │   ├── components/   # React components (Header, ProcessTable, SystemStats, etc.)
+│   │   ├── hooks/        # Custom React hooks (useProcesses, useSystemInfo)
+│   │   ├── api.ts        # API client
+│   │   ├── types.ts      # TypeScript types
+│   │   ├── App.tsx       # Main application component
+│   │   └── index.css     # Tailwind CSS styles
+│   ├── package.json      # NPM dependencies
+│   ├── vite.config.ts    # Vite build config
+│   ├── tailwind.config.js # Tailwind CSS config
+│   └── tsconfig.json     # TypeScript config
+├── requirements/         # Project requirements documentation
+│   ├── README.md         # Requirements overview
+│   ├── functional-requirements.md
+│   ├── non-functional-requirements.md
+│   ├── architecture.md
+│   ├── test-plan.md
+│   └── grading-rubric.md
+├── Dockerfile            # Multi-stage Docker build
 ├── test.sh               # Quick validation script
 ├── demo.sh               # Feature showcase script
 ├── config.example.toml   # Example configuration
@@ -442,25 +499,35 @@ This project is developed as part of academic coursework for CSCE 3401 Operating
 2. Check the status bar for current operation hints
 3. Review command line options with `--help`
 
-## Future Roadmap
+## Web UI
 
-### Short Term (Phase II)
-- Complete network bandwidth monitoring per process
-- Add container/cgroup awareness
-- Implement historical data storage
-- Performance optimizations
+The project includes a modern React + TypeScript web interface built with:
 
-### Medium Term (Phase III)
-- GPU monitoring integration
-- Web UI for remote access
-- REST API development
-- Advanced filtering options
+- **React 18** with TypeScript for type-safe development
+- **Vite** for fast development and optimized builds
+- **Tailwind CSS** for responsive, modern styling
+- **TanStack Query** for efficient data fetching and caching
+- **Lucide React** for consistent iconography
 
-### Long Term (Phase IV)
-- Machine learning anomaly detection
-- Kubernetes integration
-- Metrics export (Prometheus/InfluxDB)
-- Plugin architecture
+### Web UI Features
+- Real-time process monitoring with configurable auto-refresh (1-30 seconds)
+- Sortable columns (PID, Name, User, CPU%, Memory)
+- Full-text search across process name, command, user, and PID
+- System overview cards (CPU cores, Load Average, Memory, Swap, Uptime)
+- Process actions with signal selection (SIGTERM, SIGKILL, SIGHUP, etc.)
+- Status badges for process states (Running, Sleeping, Zombie, etc.)
+- Connection status indicator
+- Professional light-mode design
+
+### Building the Web UI
+```bash
+cd web
+npm install
+npm run build    # Production build to dist/
+npm run dev      # Development server
+```
+
+The production build is automatically served by the Rust API server at http://localhost:8080
 
 ## Acknowledgments
 

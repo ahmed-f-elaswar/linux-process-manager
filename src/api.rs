@@ -4,10 +4,12 @@
 use crate::process::{ProcessManager, ProcessFilter, SortColumn, ProcessInfo};
 use crate::history::HistoryManager;
 use actix_web::{web, App, HttpServer, HttpResponse, Responder, middleware};
+use actix_files as fs;
 use actix_cors::Cors;
 use serde::{Deserialize, Serialize};
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
+use std::path::PathBuf;
 use tokio::time::interval;
 use chrono::{DateTime, Utc};
 use tracing::{debug, info, warn, error};
@@ -366,7 +368,7 @@ pub async fn start_api_server(
     history_db_path: Option<String>,
 ) -> std::io::Result<()> {
     let pm = Arc::new(Mutex::new(process_manager));
-    
+
     let history_manager = if let Some(db_path) = history_db_path {
         match HistoryManager::new(&db_path) {
             Ok(hm) => Some(Arc::new(Mutex::new(hm))),
@@ -378,12 +380,12 @@ pub async fn start_api_server(
     } else {
         None
     };
-    
+
     let app_state = Arc::new(AppState {
         process_manager: pm,
         history_manager: history_manager.clone(),
     });
-    
+
     // Start background history recording task
     if history_manager.is_some() {
         let state_clone = app_state.clone();
@@ -391,21 +393,30 @@ pub async fn start_api_server(
             record_history_task(state_clone).await;
         });
     }
-    
+
     println!("Starting REST API server on {}", bind_address);
-    
+
+    // Determine the static files directory
+    // Check multiple possible locations for the web UI
+    let static_dir = find_static_dir();
+    if let Some(ref dir) = static_dir {
+        println!("Serving static files from: {}", dir.display());
+    }
+
     let app_state_data = web::Data::new(AppState {
         process_manager: app_state.process_manager.clone(),
         history_manager: app_state.history_manager.clone(),
     });
-    
+
+    let static_dir_clone = static_dir.clone();
+
     HttpServer::new(move || {
         let cors = Cors::default()
             .allow_any_origin()
             .allow_any_method()
             .allow_any_header();
-        
-        App::new()
+
+        let mut app = App::new()
             .app_data(app_state_data.clone())
             .wrap(middleware::Logger::default())
             .wrap(cors)
@@ -415,11 +426,53 @@ pub async fn start_api_server(
             .route("/api/processes/kill", web::post().to(kill_process))
             .route("/api/system", web::get().to(get_system_info))
             .route("/api/history/processes", web::get().to(get_process_history))
-            .route("/api/history/top-cpu", web::get().to(get_top_cpu_consumers))
+            .route("/api/history/top-cpu", web::get().to(get_top_cpu_consumers));
+
+        // Serve static files if the directory exists
+        if let Some(ref dir) = static_dir_clone {
+            app = app.service(
+                fs::Files::new("/", dir.clone())
+                    .index_file("index.html")
+                    .default_handler(
+                        fs::NamedFile::open(dir.join("index.html"))
+                            .expect("index.html not found")
+                    )
+            );
+        }
+
+        app
     })
     .bind(bind_address)?
     .run()
     .await
+}
+
+/// Find the directory containing static web files
+/// Checks multiple possible locations in order of preference
+fn find_static_dir() -> Option<PathBuf> {
+    let possible_paths = [
+        // Docker/production: web/dist relative to binary
+        PathBuf::from("web/dist"),
+        // Development: relative to current directory
+        PathBuf::from("./web/dist"),
+        // Legacy: single HTML file location
+        PathBuf::from("web"),
+        PathBuf::from("./web"),
+        // Absolute path for Docker
+        PathBuf::from("/app/web/dist"),
+    ];
+
+    for path in possible_paths {
+        if path.exists() && path.is_dir() {
+            // Check if it contains index.html
+            if path.join("index.html").exists() {
+                return Some(path);
+            }
+        }
+    }
+
+    info!("No static files directory found - API-only mode");
+    None
 }
 
 #[cfg(test)]
