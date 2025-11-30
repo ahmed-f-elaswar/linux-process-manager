@@ -1,5 +1,5 @@
 # Linux Process Manager - Multi-stage Docker Build
-# Builds both React frontend and Rust backend in a single container
+# Builds React frontend and embeds it into the Rust binary
 
 # =============================================================================
 # Stage 1: Build React Frontend
@@ -21,15 +21,9 @@ COPY web/ ./
 RUN npm run build
 
 # =============================================================================
-# Stage 2: Build Rust Backend
+# Stage 2: Build Rust Backend (with embedded frontend)
 # =============================================================================
-FROM rust:1.75-bookworm AS backend-builder
-
-# Install build dependencies
-RUN apt-get update && apt-get install -y \
-    pkg-config \
-    libssl-dev \
-    && rm -rf /var/lib/apt/lists/*
+FROM rust:1.83-bookworm AS backend-builder
 
 WORKDIR /app
 
@@ -41,16 +35,22 @@ RUN mkdir src && \
     echo "fn main() {}" > src/main.rs && \
     echo "pub fn dummy() {}" > src/lib.rs
 
+# Create dummy web/dist for rust-embed
+RUN mkdir -p web/dist && echo "<html></html>" > web/dist/index.html
+
 # Build dependencies only
 RUN cargo build --release && rm -rf src
 
 # Copy real source code
 COPY src/ ./src/
 
-# Touch main.rs to force rebuild
+# Copy the built frontend from stage 1 (for rust-embed to include)
+COPY --from=frontend-builder /app/web/dist ./web/dist
+
+# Touch main.rs to force rebuild with real frontend
 RUN touch src/main.rs
 
-# Build the actual application
+# Build the actual application (frontend gets embedded)
 RUN cargo build --release
 
 # =============================================================================
@@ -62,28 +62,13 @@ FROM debian:bookworm-slim
 RUN apt-get update && apt-get install -y \
     ca-certificates \
     procps \
+    curl \
     && rm -rf /var/lib/apt/lists/*
-
-# Create non-root user for security
-RUN useradd -m -s /bin/bash procmgr
 
 WORKDIR /app
 
-# Copy the built binary
+# Copy only the binary (frontend is embedded inside)
 COPY --from=backend-builder /app/target/release/process-manager ./
-
-# Copy the built frontend
-COPY --from=frontend-builder /app/web/dist ./web/dist
-
-# Copy configuration template
-COPY config.example.toml ./config.toml
-
-# Set ownership
-RUN chown -R procmgr:procmgr /app
-
-# Note: We run as root to access /proc for all processes
-# In production, consider using capabilities instead
-# USER procmgr
 
 # Expose API port
 EXPOSE 8080
@@ -101,14 +86,11 @@ CMD ["./process-manager", "--api", "--api-port", "8080"]
 # Build:
 #   docker build -t linux-process-manager .
 #
-# Run (interactive TUI - requires terminal):
-#   docker run -it --rm --pid=host linux-process-manager ./process-manager
-#
-# Run (API server):
+# Run (API server with web UI):
 #   docker run -d -p 8080:8080 --pid=host --name procmgr linux-process-manager
 #
-# Run with host process visibility:
-#   docker run -d -p 8080:8080 --pid=host --privileged linux-process-manager
+# Run (interactive TUI):
+#   docker run -it --rm --pid=host linux-process-manager ./process-manager
 #
 # View logs:
 #   docker logs procmgr
